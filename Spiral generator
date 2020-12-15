@@ -1,0 +1,121 @@
+#include<stdio.h>
+#include<conio.h>
+#include<math.h>
+#include<stdlib.h>
+#include<string.h>
+#define PI 3.14159265
+#define MAX_DATA_SIZE 55
+
+double x[MAX_DATA_SIZE];
+double y[MAX_DATA_SIZE];
+
+//Program that generates a csv file containing the list of points needed to draw different types of spirals
+int create_csv() {
+	FILE *fp;
+
+	char filename[20];
+	char nameflag = 1;
+	int i;
+	errno_t error;
+
+	do {
+		printf("Enter filename: ");
+		scanf_s("%s", filename, 20);
+
+		if (strlen(filename) > 10) {
+			printf("Filename is too long\n");
+			nameflag = 1;
+		}
+		else {
+			strcat_s(filename, ".CSV");
+			if (fopen_s(&fp, filename, "w") != 0) {
+				nameflag = 1;
+			}
+			else {
+				nameflag = 0;
+			}
+		}
+	} while (nameflag);
+		
+	fprintf(fp, "x,y\n");
+	for (i=0; i<=50; i++){
+		fprintf(fp, "%lf,%lf\n", x[i], y[i]);
+	}
+	fclose(fp);
+	printf("File has been created.\n");
+	return(0);
+}
+
+int main(void) {
+		char input[20];
+
+		printf("\nSelect commands from below:\n");
+		printf("Type a for clockwise spiral line\n");
+		printf("Type b for counter clockwise spiral line\n");
+		printf("Type c for clockwise spiral line using Fibonacci number\n");
+		printf("Type d for counter clockwise spiral line using Fibonacci number\n");
+		printf("Type x to exit program\n\n\n");
+
+		scanf_s("%s", input, 20);
+
+		if (strcmp("a", input) == 0) {
+			int i;
+			double a = 0.01;
+
+			for (i = 0; i <= 50; i++) {
+				y[i] = a * cos(i)*double (pow(i,0.5));
+				x[i] = a * sin(i)*double(pow(i, 0.5));
+			}
+			create_csv();
+		}
+		else if (strcmp("b", input) == 0) {
+			int i;
+			double a = 0.01;
+
+			for (i = 0; i <= 50; i++) {
+				x[i] = a * cos(i)*double(pow(i, 0.5));
+				y[i] = a * sin(i)*double(pow(i, 0.5));
+			}
+			create_csv();
+		}
+		else if (strcmp("c", input) == 0) {
+			int i;
+			double a = 0.01;
+
+			double phi = (1 + sqrt(5)) / 2;
+			double b = log(phi) / PI;
+
+			for (i = 0; i <= 50; i++) {
+				x[i] = a * sin(double(i))*(double(exp(b*i)));
+				y[i] = a * cos(double(i))*(double(exp(b*i)));
+			}
+			create_csv();
+		}
+		else if (strcmp("d", input) == 0) {
+			int i;
+			double a = 0.01;
+
+			double phi = (1 + sqrt(5)) / 2;
+			double b = log(phi) / PI;
+
+			for (i = 0; i <= 50; i++) {
+				x[i] = a * cos(double(i))*(double(exp(b*i)));
+				y[i] = a * sin(double(i))*(double(exp(b*i)));
+			}
+			create_csv();
+		}
+
+		//exit
+		else if (strcmp("x", input) == 0) {
+			return 0;
+		}
+
+		//error
+		else if (strcmp("a", input) != 0 && strcmp("b", input) != 0 && strcmp("c", input) != 0 && strcmp("d", input) != 0 && strcmp("x", input) != 0) {
+			printf("Please input the correct commmand key\n");
+			main();
+		}
+
+	_getch();
+	main();
+}
