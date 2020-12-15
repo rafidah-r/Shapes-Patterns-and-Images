@@ -1,0 +1,92 @@
+// The aim of this program is to sharpen images with the following conditions:
+// 1) Image blurred from averaging
+// 2) Image blurred by motion of object or object moving
+// 3) Image blurred by motion of camera
+// 4) Image blurred from camera defocusing
+
+//Convolution is the multiplication of 2 matrices followed by the sum of the elements together
+
+#include "stdafx.h"
+#include "opencv.hpp"
+
+using namespace cv;
+
+int main()
+{
+	Mat OrigImg, AvgImg, SharpImg, Imgblur2, Imgblur3, Imgblur4;		//Declare variables
+	Mat kernel;							//Kernel is a fixed size array of numerical coefficients with an anchor point at the center; e.g 3x3 matrix
+	Point anchor;						//Anchor is located at the center of a kernel
+	double delta;						//Represents the value to be added to each pixel during the correlation
+	int outdepth;						//outdepth is the depth of the resulting output image
+	int ksize;							//Represents the kernel size
+
+										//Read and show Original Image
+	OrigImg = imread("image1.2.jpg", 1);			//"1" reads image in color whereas "0" reads image in black & white
+	imshow("Original", OrigImg);				//Shows Original image
+	waitKey(0);									//Waits for a key to be pressed
+
+												//Initialize the arguments for filter
+	anchor = Point(-1, -1);						//The location Point (-1,-1) indicates the center by default
+	delta = 0;									//0 is default
+	outdepth = -1;								//Negative value indicates the same depth as original image
+
+												//Computes kernel or filter for Averaging
+	int a = 0;
+	ksize = 3 + 2 * (a % 5);					//kernel size must be in odd values; kernel size = 3
+	kernel = Mat::ones(ksize, ksize, CV_32F) / (float)(ksize*ksize);
+
+	//Apply filter or convolution once
+	filter2D(OrigImg, AvgImg, outdepth, kernel, anchor, delta, BORDER_DEFAULT);		//Applies Averaging filter onto Original image
+	imshow("Average x1", AvgImg);													//Displays results
+	waitKey(0);
+
+	//Apply filter multiple times on the same image
+	for (int i = 0; i < 5; i++) {
+		filter2D(AvgImg, AvgImg, outdepth, kernel, anchor, delta, BORDER_DEFAULT);
+		i++;
+	}
+	imshow("Averaging x5", AvgImg);
+	waitKey(0);
+
+	//Apply sharpening by Laplace matrix
+	float data[][3] = { { -1,-1,-1 },{ -1,9,-1 },{ -1,-1,-1 } };			 //3x3 matrix in array
+	Mat kernel2(3, 3, CV_32FC1, data);								 //Kernel for sharpening
+	filter2D(AvgImg, SharpImg, -1, kernel2);						 //Applies Sharpening on image
+	imshow("Sharpened", SharpImg);
+	waitKey(0);
+
+	//Apply sharpening multiple times
+	for (int j = 0; j < 5; j++) {
+		filter2D(SharpImg, SharpImg, -1, kernel2);
+		j++;
+	}
+	imshow("Sharpened x5", SharpImg);
+	waitKey(0);
+
+	//Sharpen image blurred by motion of object
+	Imgblur2 = imread("image3.1.jpg", 1);
+	imshow("Image condition 2", Imgblur2);
+	waitKey(0);
+	filter2D(Imgblur2, SharpImg, -1, kernel2);
+	imshow("Sharpened", SharpImg);
+	waitKey(0);
+
+	//Sharpen image blurred by motion of camera
+	Imgblur3 = imread("image5.jpg", 1);
+	imshow("Image condition 3", Imgblur3);
+	waitKey(0);
+	filter2D(Imgblur3, SharpImg, -1, kernel2);
+	imshow("Sharpened", SharpImg);
+	waitKey(0);
+
+	//Sharpen image blurred due to defocusing of camera
+	Imgblur4 = imread("image4.1.jpg", 1);
+	imshow("Image condition 4", Imgblur4);
+	waitKey(0);
+	filter2D(Imgblur4, SharpImg, -1, kernel2);
+	imshow("Sharpened", SharpImg);
+	waitKey(0);
+
+	//Press ESC to exit program anytime
+	return 0;
+}
