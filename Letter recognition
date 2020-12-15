@@ -1,0 +1,155 @@
+#include "stdafx.h"
+#include <opencv2\opencv.hpp>
+#include "opencv_modules.hpp"
+#include<iostream>
+#include<sstream>
+#include<math.h>
+#include <vector>
+
+using Pair = std::pair<const char, double>;
+
+
+struct tool
+{
+    bool operator()(const Pair& i, const Pair& j)const{ return (i.second < j.second);}
+};
+
+
+double getDistance(std::vector <double> vec1, std::vector<double> vec2){
+    double total = 0.0;
+    for(int i=0; i<vec1.size(); i++)
+    {
+        total += pow((vec1[i]-vec2[i]), 2);
+    }
+    return sqrt(total);
+}
+
+
+std::vector<double> getVector(cv::Mat letter)
+{
+    cv::Mat blur;
+    cv::Mat thresh;
+    
+    cv::medianBlur(letter, blur, 5);
+    cv::threshold(blur, thresh, 40, 255, cv::THRESH_BINARY);
+
+    if(thresh.empty())
+    {
+        std::cout<< "Image not read from file.\n" << std::endl;
+    }
+
+
+    int Height = thresh.rows;
+    int Width = thresh.cols;
+    int black = 0;
+    int blockNum = 10;
+    
+    std::vector<double> featureVector;
+
+
+    cv::Size smallSize(Height/blockNum, Width/blockNum);
+    int pixels_in_block = smallSize.height * smallSize.width;
+
+    
+    for(int i=0; i< blockNum; i++)
+    {
+        for(int j=0; j< blockNum; j++) 
+        {
+            for(int r=smallSize.height*i; r<smallSize.height*(i+1); r++)
+            {
+                for(int c=smallSize.width*j; c<smallSize.width*(j+1); c++)
+                {
+                    int pixelValue = (int)thresh.at<uchar>(r,c);
+                    if(pixelValue == 255) black++;
+                }
+            }
+            
+            featureVector.push_back((double)black/pixels_in_block);
+            black = 0;
+        }
+    }
+    return featureVector;
+}
+
+
+int main()
+{
+
+    cv::Mat test;
+    cv::Mat matA,matB,matC,matD,matE,matF;
+    
+    matA = cv::imread("A.jpg",0);
+    matB = cv::imread("B.jpg",0);
+    matC = cv::imread("C.jpg",0);
+    matD = cv::imread("D.jpg",0);
+    matE = cv::imread("E.jpg",0);
+    matF = cv::imread("F.jpg",0);
+    
+
+    std::vector<double> vecA = getVector(matA);
+    std::vector<double> vecB = getVector(matB);
+    std::vector<double> vecC = getVector(matC);
+    std::vector<double> vecD = getVector(matD);
+    std::vector<double> vecE = getVector(matE);
+    std::vector<double> vecF = getVector(matF);
+
+    test = cv::imread("Test.jpg");
+    std::vector<double> testVec = getVector(test);
+
+
+    std::map<char,double> distance;
+    std::pair<char, double> min;
+
+    distance['A'] = getDistance(vecA, testVec);
+    distance['B'] = getDistance(vecB, testVec);
+    distance['C'] = getDistance(vecC, testVec);
+    distance['D'] = getDistance(vecD, testVec);
+    distance['E'] = getDistance(vecE, testVec);
+    distance['F'] = getDistance(vecF, testVec);
+
+    min = *min_element(distance.begin(), distance.end(), tool());
+	cv::waitKey(0);
+
+
+    switch(min.first)
+    {
+        case 'A':
+            std::cout << "Letter read: A" <<
+			cv::waitKey(0);
+            break;
+
+        case 'B':
+            std::cout << "Letter read: B";
+			cv::waitKey(0);
+            break;
+
+        case 'C':
+            std::cout << "Letter read: C";
+			cv::waitKey(0);
+            break;
+
+        case 'D':
+            std::cout << "Letter read: D";
+			cv::waitKey(0);
+            break;
+
+        case 'E':
+            std::cout << "Letter read: E";
+			cv::waitKey(0);
+            break;
+
+        case 'F':
+            std::cout << "Letter read: F";
+			cv::waitKey(0);
+            break;
+
+        default:
+            std::cout << "Can't recognize the letter.";
+			cv::waitKey(0);
+
+    }
+
+	cv::waitKey(0);
+
+    return(0);
+}
