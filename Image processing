@@ -1,0 +1,34 @@
+#include "stdafx.h"
+
+using namespace System;
+
+//OpenCV‚Include head file
+#include "opencv.hpp"
+
+int main() {
+
+	//Read and show the image
+	cv::Mat imgColor = cv::imread("images.jpg", 1);
+	cv::imshow("color", imgColor);
+	cv::waitKey(0);
+
+	//Gray Scale Transformation
+	cv::Mat imgGray;
+	cv::cvtColor(imgColor, imgGray, cv::COLOR_BGR2GRAY);//Transformation Function
+	cv::imshow("gray-scale", imgGray);
+	cv::waitKey(0);
+
+	//Edge Detection
+	cv::Mat imgCanny;
+	cv::Canny(imgColor, imgCanny, 50, 200);//Edge detection function
+	cv::imshow("edge", imgCanny);
+	cv::waitKey(0);
+
+	//Binarization
+	cv::Mat imgThreshold;
+	cv::threshold(imgGray, imgThreshold, 100, 255, cv::THRESH_BINARY);//Binary Function
+	cv::imshow("binaryzation", imgThreshold);
+	cv::waitKey(0);
+
+	return 0;
+}
